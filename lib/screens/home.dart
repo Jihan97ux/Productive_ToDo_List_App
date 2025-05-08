@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../model/todo.dart';
 import '../constants/colors.dart';
 import '../widgets/todo_item.dart';
+import '../screens/setting.dart';
+
 
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
@@ -27,6 +29,7 @@ class _HomeState extends State<Home> {
   ];
 
   int _currentBgColorIndex = 0;
+
   Color get _currentBgColor => _backgroundColors[_currentBgColorIndex];
 
   @override
@@ -39,14 +42,17 @@ class _HomeState extends State<Home> {
     if (todosList.isEmpty) {
       _completionPercentage = 0.0;
     } else {
-      final completedCount = todosList.where((todo) => todo.isDone).length;
+      final completedCount = todosList
+          .where((todo) => todo.isDone)
+          .length;
       _completionPercentage = (completedCount / todosList.length) * 100;
     }
   }
 
   void _changeBackgroundColor() {
     setState(() {
-      _currentBgColorIndex = (_currentBgColorIndex + 1) % _backgroundColors.length;
+      _currentBgColorIndex =
+          (_currentBgColorIndex + 1) % _backgroundColors.length;
     });
   }
 
@@ -101,15 +107,17 @@ class _HomeState extends State<Home> {
                           ],
                         ),
                       ),
-                      ..._foundToDo.reversed.map((todoo) => ToDoItem(
-                        todo: todoo,
-                        onToDoChanged: _handleToDoChange,
-                        onDeleteItem: _deleteToDoItem,
-                      )).toList(),
+                      ..._foundToDo.reversed.map((todoo) =>
+                          ToDoItem(
+                            todo: todoo,
+                            onToDoChanged: _handleToDoChange,
+                            onDeleteItem: _deleteToDoItem,
+                          )).toList(),
                       SizedBox(height: 20),
                       Center(
                         child: Text(
-                          'Completed: ${_completionPercentage.toStringAsFixed(1)}%',
+                          'Completed: ${_completionPercentage.toStringAsFixed(
+                              1)}%',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -243,29 +251,31 @@ class _HomeState extends State<Home> {
     } else {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Delete Task'),
-          content: Text('This task is not completed. Are you sure you want to delete it?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
+        builder: (context) =>
+            AlertDialog(
+              title: Text('Delete Task'),
+              content: Text(
+                  'This task is not completed. Are you sure you want to delete it?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      todosList.removeWhere((item) => item.id == id);
+                      _runFilter(''); // refresh filter
+                      _updateCompletionPercentage();
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Delete', style: TextStyle(color: tdRed)),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  todosList.removeWhere((item) => item.id == id);
-                  _runFilter(''); // refresh filter
-                  _updateCompletionPercentage();
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Delete', style: TextStyle(color: tdRed)),
-            ),
-          ],
-        ),
       );
     }
   }
@@ -284,7 +294,10 @@ class _HomeState extends State<Home> {
     if (!isDuplicate) {
       setState(() {
         todosList.add(ToDo(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: DateTime
+              .now()
+              .millisecondsSinceEpoch
+              .toString(),
           todoText: trimmedTodo,
         ));
         _runFilter(''); // refresh filter
@@ -308,9 +321,10 @@ class _HomeState extends State<Home> {
       results = todosList;
     } else {
       results = todosList
-          .where((item) => item.todoText!
-          .toLowerCase()
-          .contains(enteredKeyword.toLowerCase()))
+          .where((item) =>
+          item.todoText!
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()))
           .toList();
     }
 
@@ -349,23 +363,34 @@ class _HomeState extends State<Home> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: _currentBgColor, // Use the selected background color for AppBar too
+      backgroundColor: _currentBgColor,
       elevation: 0,
-      title: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Icon(
-          Icons.menu,
-          color: tdBlack,
-          size: 30,
-        ),
-        Container(
-          height: 40,
-          width: 40,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.asset('assets/images/jia.jpg'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+            child: Icon(
+              Icons.menu,
+              color: tdBlack,
+              size: 30,
+            ),
           ),
-        ),
-      ]),
+          Container(
+            height: 40,
+            width: 40,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset('assets/images/jia.jpg'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
